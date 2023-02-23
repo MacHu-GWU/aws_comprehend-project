@@ -10,9 +10,15 @@ import dataclasses
 from datetime import datetime
 
 from iterproxy import IterProxy
+from func_args import NOTHING, resolve_kwargs
+from light_emoji import common
 from boto_session_manager import BotoSesManager
 
+from ..waiter import WaiterError, Waiter
 
+# ------------------------------------------------------------------------------
+# Data Model
+# ------------------------------------------------------------------------------
 class DocumentClassifierStatusEnum(str, enum.Enum):
     SUBMITTED = "SUBMITTED"
     TRAINING = "TRAINING"
@@ -141,6 +147,9 @@ class DocumentClassifierVersion:
         return None
 
 
+# ------------------------------------------------------------------------------
+# Boto3
+# ------------------------------------------------------------------------------
 class DocumentClassifierVersionIterProxy(IterProxy[DocumentClassifierVersion]):
     pass
 
@@ -186,7 +195,7 @@ def _list_document_classifiers(
         )
         > 1
     ):
-        raise ValueError
+        raise ValueError("You can only set one filter at a time.")
     filter = dict()
     if name is not None:  # pragma: no cover
         filter["DocumentClassifierName"] = name
@@ -243,9 +252,6 @@ def describe_document_classifier(
     arn: str,
 ) -> T.Optional[DocumentClassifierVersion]:
     """
-    :param bsm:
-    :param arn:
-
     :return: DocumentClassifierVersion object or None if not found.
 
     Ref:
@@ -264,3 +270,114 @@ def describe_document_classifier(
             return None
         else:  # pragma: no cover
             raise e
+
+
+def delete_document_classifier(
+    bsm: BotoSesManager,
+    arn: str,
+) -> bool:
+    """
+    :return: a boolean value indicate that the deletion happened or not.
+
+    Ref:
+
+    - delete_document_classifier: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/comprehend.html#Comprehend.Client.delete_document_classifier
+    """
+    classifier_version = describe_document_classifier(bsm=bsm, arn=arn)
+    if classifier_version is None:
+        return False
+    response = bsm.comprehend_client.delete_document_classifier(
+        DocumentClassifierArn=arn
+    )
+    return True
+
+
+def wait_document_classifier(
+    bsm: BotoSesManager,
+    arn: str,
+    succeeded_status: T.List[str],
+    failed_status: T.List[str] = None,
+    delays: int = 5,
+    timeout: int = 3600,
+    verbose: bool = True,
+):
+    if failed_status is None:
+        failed_status = []
+    for _ in Waiter(delays=delays, timeout=timeout, verbose=verbose):
+        classifier_version = describe_document_classifier(bsm=bsm, arn=arn)
+        if classifier_version is None:
+            if verbose:
+                print(f"classifier version doesn't exists.")
+            return False
+        status = classifier_version.status
+        if status in succeeded_status:
+            return True
+        elif status in failed_status:
+            raise WaiterError(f"failed with status {status!r}")
+        else:
+            pass
+
+
+def wait_create_document_classifier_to_succeed(
+    bsm: BotoSesManager,
+    arn: str,
+    delays: int = 5,
+    timeout: int = 3600,
+    verbose: bool = True,
+):
+    if verbose:  # pragma: no cover
+        print(
+            f"{common.play_or_pause} wait for "
+            f"create document classifier {arn} to finish ..."
+        )
+    flag = wait_document_classifier(
+        bsm=bsm,
+        arn=arn,
+        succeeded_status=[
+            DocumentClassifierStatusEnum.TRAINED.value,
+        ],
+        failed_status=[
+            DocumentClassifierStatusEnum.DELETING.value,
+            DocumentClassifierStatusEnum.STOP_REQUESTED.value,
+            DocumentClassifierStatusEnum.STOPPED.value,
+            DocumentClassifierStatusEnum.IN_ERROR.value,
+        ],
+        delays=delays,
+        timeout=timeout,
+        verbose=verbose,
+    )
+    if flag is False:
+        raise WaiterError(f"{arn} not found!")
+    if verbose:  # pragma: no cover
+        print(f"{common.succeeded} document classifier is trained.")
+
+
+def wait_delete_document_classifier_to_finish(
+    bsm: BotoSesManager,
+    arn: str,
+    delays: int = 5,
+    timeout: int = 3600,
+    verbose: bool = True,
+):
+    if verbose:  # pragma: no cover
+        print(
+            f"{common.play_or_pause} wait for "
+            f"delete document classifier {arn} to finish ..."
+        )
+    flag = wait_document_classifier(
+        bsm=bsm,
+        arn=arn,
+        succeeded_status=[],
+        failed_status=[
+            DocumentClassifierStatusEnum.TRAINING.value,
+            DocumentClassifierStatusEnum.TRAINED.value,
+            DocumentClassifierStatusEnum.IN_ERROR.value,
+        ],
+        delays=delays,
+        timeout=timeout,
+        verbose=verbose,
+    )
+    if flag is not False:
+        raise WaiterError("Deletion failed!")
+    if verbose:  # pragma: no cover
+        print(f"{common.succeeded} document classifier is deleted.")

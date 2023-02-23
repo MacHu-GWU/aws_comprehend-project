@@ -15,5 +15,6 @@ __github_username__ = "MacHu-GWU"
 
 try:
     from . import better_boto
+    from .waiter import WaiterError, Waiter
 except:
     pass
