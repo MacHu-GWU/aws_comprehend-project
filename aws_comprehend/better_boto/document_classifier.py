@@ -29,6 +29,21 @@ class DocumentClassifierStatusEnum(str, enum.Enum):
     TRAINED = "TRAINED"
 
 
+class LanguageEnum(str, enum.Enum):
+    en = "en"
+    es = "es"
+    fr = "fr"
+    de = "de"
+    it = "it"
+    pt = "pt"
+    ar = "ar"
+    hi = "hi"
+    ja = "ja"
+    ko = "ko"
+    zh = "zh"
+    zh_TW = "zh-TW"
+
+
 @dataclasses.dataclass
 class DocumentClassifierVersion:
     """

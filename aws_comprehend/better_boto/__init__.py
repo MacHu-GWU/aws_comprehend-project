@@ -2,6 +2,7 @@
 
 from .document_classifier import (
     DocumentClassifierStatusEnum,
+    LanguageEnum,
     DocumentClassifierVersion,
     list_document_classifiers,
     describe_document_classifier,
