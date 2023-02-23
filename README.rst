@@ -1,12 +1,12 @@
 
-.. image:: https://readthedocs.org/projects/aws_comprehend/badge/?version=latest
+.. .. image:: https://readthedocs.org/projects/aws_comprehend/badge/?version=latest
     :target: https://aws_comprehend.readthedocs.io/index.html
     :alt: Documentation Status
 
-.. image:: https://github.com/MacHu-GWU/aws_comprehend-project/workflows/CI/badge.svg
+.. .. image:: https://github.com/MacHu-GWU/aws_comprehend-project/workflows/CI/badge.svg
     :target: https://github.com/MacHu-GWU/aws_comprehend-project/actions?query=workflow:CI
 
-.. image:: https://codecov.io/gh/MacHu-GWU/aws_comprehend-project/branch/main/graph/badge.svg
+.. .. image:: https://codecov.io/gh/MacHu-GWU/aws_comprehend-project/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/MacHu-GWU/aws_comprehend-project
 
 .. image:: https://img.shields.io/pypi/v/aws_comprehend.svg
@@ -24,16 +24,16 @@
 ------
 
 
-.. image:: https://img.shields.io/badge/Link-Document-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-Document-blue.svg
     :target: https://aws_comprehend.readthedocs.io/index.html
 
-.. image:: https://img.shields.io/badge/Link-API-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-API-blue.svg
     :target: https://aws_comprehend.readthedocs.io/py-modindex.html
 
-.. image:: https://img.shields.io/badge/Link-Source_Code-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-Source_Code-blue.svg
     :target: https://aws_comprehend.readthedocs.io/py-modindex.html
 
-.. image:: https://img.shields.io/badge/Link-Install-blue.svg
+.. .. image:: https://img.shields.io/badge/Link-Install-blue.svg
     :target: `install`_
 
 .. image:: https://img.shields.io/badge/Link-GitHub-blue.svg
@@ -51,8 +51,7 @@
 
 Welcome to ``aws_comprehend`` Documentation
 ==============================================================================
-
-Documentation for ``aws_comprehend``.
+``aws_comprehend`` improves the vanilla Amazon Comprehend boto3 API.
 
 
 .. _install:
