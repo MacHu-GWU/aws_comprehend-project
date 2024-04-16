@@ -15,6 +15,14 @@ Backlog (TODO)
 **Miscellaneous**
 
 
+0.1.2 (2024-04-16)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Minor Improvements**
+
+- Move public api to ``aws_comprehend.api`` module.
+- Improve integration test using sample data.
+
+
 0.1.1 (2023-02-23)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**
