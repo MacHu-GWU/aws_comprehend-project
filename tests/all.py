@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
 if __name__ == "__main__":
-    import pytest
+    from aws_comprehend.tests import run_cov_test
 
-    pytest.main(["-s", "--tb=native"])
+    run_cov_test(__file__, "aws_comprehend", is_folder=True, preview=False)

@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import pytest
-
 from aws_comprehend.comprehend_csv import (
     encode_label,
     encode_text,
@@ -21,5 +18,6 @@ def test_encode_row():
 
 
 if __name__ == "__main__":
-    basename = os.path.basename(__file__)
-    pytest.main([basename, "-s", "--tb=native"])
+    from aws_comprehend.tests import run_cov_test
+
+    run_cov_test(__file__, "aws_comprehend.comprehend_csv", preview=False)

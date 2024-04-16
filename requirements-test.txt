@@ -3,4 +3,4 @@ pytest                                  # test framework
 pytest-cov                              # coverage test
 
 boto3
-s3pathlib
+s3pathlib>=2.1.2,<3.0.0

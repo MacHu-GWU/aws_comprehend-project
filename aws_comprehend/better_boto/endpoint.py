@@ -14,7 +14,8 @@ from func_args import NOTHING, resolve_kwargs
 from light_emoji import common
 from boto_session_manager import BotoSesManager
 
-from ..waiter import WaiterError, Waiter
+from ..vendor.waiter import Waiter
+from ..exc import WaiterError
 
 
 # ------------------------------------------------------------------------------
@@ -118,14 +119,15 @@ def _list_endpoints(
     """
     Use paginator to list all endpoint.
 
-    :param bsm:
-    :param model_arn:
-    :param status:
-    :param creation_time_before:
-    :param creation_time_after:
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param model_arn: filter by model arn.
+    :param status: filter by status.
+    :param creation_time_before: filter by creation time before this datetime (utc time).
+    :param creation_time_after: filter by creation time after this datetime (utc time).
     :param max_items:
     :param page_size:
-    :return:
+
+    :return: an iterator of :class:`Endpoint`
     """
     # You can only set one filter at a time.
     if (
@@ -178,6 +180,9 @@ def list_endpoints(
     max_items: int = 1000,
     page_size: int = 100,
 ) -> EndpointIterProxy:
+    """
+    See :func:`_list_endpoints` for more details.
+    """
     return EndpointIterProxy(
         _list_endpoints(
             bsm=bsm,
@@ -196,10 +201,11 @@ def describe_endpoint(
     name_or_arn: str,
 ) -> T.Optional[Endpoint]:
     """
+    Get model endpoint details.
 
-    :param bsm:
-    :param name_or_arn:
-    :return:
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name_or_arn: endpoint name or arn.
+    :return: :class:`Endpoint` or None
 
     Ref:
 
@@ -224,8 +230,13 @@ def update_endpoint(
     desired_data_access_role_arn: str = NOTHING,
 ):
     """
+    Update the model endpoint.
 
-    :return:
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name_or_arn: endpoint name or arn.
+    :param desired_model_arn:
+    :param desired_inference_units:
+    :param desired_data_access_role_arn:
 
     Ref:
 
@@ -247,6 +258,11 @@ def delete_endpoint(
     name_or_arn: str,
 ) -> bool:
     """
+    Delete the model endpoint.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name_or_arn:
+
     :return: a boolean value indicate that the deletion happened or not.
 
     Ref:
@@ -270,6 +286,20 @@ def wait_endpoint(
     timeout: int = 3600,
     verbose: bool = True,
 ):
+    """
+    Wait for the endpoint to reach the desired status.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name_or_arn: endpoint name or arn.
+    :param succeeded_status: list of status that indicate the waiter should stop
+        as succeeded.
+    :param failed_status: list of status that indicate the waiter should stop
+        and raise exception.
+    :param delays:
+    :param timeout:
+    :param verbose:
+    :return:
+    """
     arn = _ensure_endpoint_arn(bsm=bsm, name_or_arn=name_or_arn)
     if failed_status is None:
         failed_status = []
@@ -295,8 +325,18 @@ def wait_create_or_update_endpoint_to_succeed(
     timeout: int = 3600,
     verbose: bool = True,
 ):
+    """
+    Wait for the endpoint to be in service.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name_or_arn: endpoint name or arn.
+    :param delays:
+    :param timeout:
+    :param verbose:
+    :return:
+    """
     arn = _ensure_endpoint_arn(bsm=bsm, name_or_arn=name_or_arn)
-    if verbose: # pragma: no cover
+    if verbose:  # pragma: no cover
         print(
             f"{common.play_or_pause} wait for "
             f"create / update Comprehend endpoint {arn} to finish ..."
@@ -317,8 +357,9 @@ def wait_create_or_update_endpoint_to_succeed(
     )
     if flag is False:
         raise WaiterError(f"{arn} not found!")
-    if verbose: # pragma: no cover
+    if verbose:  # pragma: no cover
         print(f"{common.succeeded} Comprehend endpoint is in service.")
+
 
 def wait_delete_endpoint_to_finish(
     bsm: BotoSesManager,
@@ -327,8 +368,18 @@ def wait_delete_endpoint_to_finish(
     timeout: int = 3600,
     verbose: bool = True,
 ):
+    """
+    Wait for the endpoint to be deleted.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name_or_arn: endpoint name or arn.
+    :param delays:
+    :param timeout:
+    :param verbose:
+    :return:
+    """
     arn = _ensure_endpoint_arn(bsm=bsm, name_or_arn=name_or_arn)
-    if verbose: # pragma: no cover
+    if verbose:  # pragma: no cover
         print(
             f"{common.play_or_pause} wait for "
             f"delete Comprehend endpoint {arn} to finish ..."
@@ -349,5 +400,5 @@ def wait_delete_endpoint_to_finish(
     )
     if flag is not False:
         raise WaiterError("Deletion failed!")
-    if verbose: # pragma: no cover
+    if verbose:  # pragma: no cover
         print(f"{common.succeeded} Comprehend endpoint is deleted.")

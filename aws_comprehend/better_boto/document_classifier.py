@@ -10,11 +10,13 @@ import dataclasses
 from datetime import datetime
 
 from iterproxy import IterProxy
-from func_args import NOTHING, resolve_kwargs
 from light_emoji import common
 from boto_session_manager import BotoSesManager
 
-from ..waiter import WaiterError, Waiter
+from ..vendor.waiter import Waiter
+
+from ..exc import WaiterError
+
 
 # ------------------------------------------------------------------------------
 # Data Model
@@ -47,6 +49,8 @@ class LanguageEnum(str, enum.Enum):
 @dataclasses.dataclass
 class DocumentClassifierVersion:
     """
+    Represent a custom document classifier version.
+
     :param arn: example, arn:aws:comprehend:us-east-1:669508176277:document-classifier/tax-document-classifier/version/v000001
     :param language_code: example: en
     """
@@ -95,6 +99,7 @@ class DocumentClassifierVersion:
         - describe_document_classifier: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/comprehend.html#Comprehend.Client.describe_document_classifier
         - list_document_classifiers: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/comprehend.html#Comprehend.Client.list_document_classifiers
         """
+        # fmt: off
         return cls(
             arn=document_classifier_properties.get("DocumentClassifierArn"),
             language_code=document_classifier_properties.get("LanguageCode"),
@@ -107,18 +112,16 @@ class DocumentClassifierVersion:
             training_end_time=document_classifier_properties.get("TrainingEndTime"),
             input_data_config=document_classifier_properties.get("InputDataConfig"),
             output_data_config=document_classifier_properties.get("OutputDataConfig"),
-            classifier_metadata=document_classifier_properties.get(
-                "ClassifierMetadata"
-            ),
-            data_access_role_arn=document_classifier_properties.get(
-                "DataAccessRoleArn"
-            ),
+            classifier_metadata=document_classifier_properties.get("ClassifierMetadata"),
+            data_access_role_arn=document_classifier_properties.get("DataAccessRoleArn"),
             volume_kms_key_id=document_classifier_properties.get("VolumeKmsKeyId"),
             vpc_config=document_classifier_properties.get("VpcConfig"),
             mode=document_classifier_properties.get("Mode"),
             model_kms_key_id=document_classifier_properties.get("ModelKmsKeyId"),
             source_model_arn=document_classifier_properties.get("SourceModelArn"),
         )
+
+    # fmt: on
 
     @classmethod
     def build_arn(
@@ -140,7 +143,9 @@ class DocumentClassifierVersion:
         classifier_name: str,
     ) -> T.Optional["DocumentClassifierVersion"]:
         """
-        :param bsm:
+        Get the latest version of the document classifier. If not found, return None.
+
+        :param bsm: ``boto_session_manager.BotoSesManager`` object.
         :param classifier_name:
         :return:
 
@@ -148,6 +153,7 @@ class DocumentClassifierVersion:
 
         - list_document_classifier_summaries: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/comprehend.html#Comprehend.Client.list_document_classifier_summaries
         """
+        # this API always returns the latest version first.
         response = bsm.comprehend_client.list_document_classifier_summaries(
             MaxResults=100
         )
@@ -184,15 +190,15 @@ def _list_document_classifiers(
     If you use "name" in the filter, then it always returns in descending
      order based on version creation time.
 
-    :param bsm:
-    :param name:
-    :param status:
-    :param submit_time_before:
-    :param submit_time_after:
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param name: filter by document classifier name.
+    :param status: filter by status.
+    :param submit_time_before: filter by submit time before this datetime (utc time).
+    :param submit_time_after: filter by submit time after this datetime (utc time).
     :param max_items:
     :param page_size:
 
-    :return:
+    :return: an iterable of :class:`DocumentClassifierVersion` object.
 
     Ref:
 
@@ -249,6 +255,9 @@ def list_document_classifiers(
     max_items: int = 1000,
     page_size: int = 100,
 ) -> DocumentClassifierVersionIterProxy:
+    """
+    See :func:`_list_document_classifiers` for more details.
+    """
     return DocumentClassifierVersionIterProxy(
         _list_document_classifiers(
             bsm=bsm,
@@ -267,7 +276,9 @@ def describe_document_classifier(
     arn: str,
 ) -> T.Optional[DocumentClassifierVersion]:
     """
-    :return: DocumentClassifierVersion object or None if not found.
+    Get custom document classifier version details.
+
+    :return: :class:`DocumentClassifierVersion` object or None if not found.
 
     Ref:
 
@@ -292,6 +303,11 @@ def delete_document_classifier(
     arn: str,
 ) -> bool:
     """
+    Delete a custom document classifier.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param arn: document classifier arn.
+
     :return: a boolean value indicate that the deletion happened or not.
 
     Ref:
@@ -316,6 +332,19 @@ def wait_document_classifier(
     timeout: int = 3600,
     verbose: bool = True,
 ):
+    """
+    Wait for the document classifier to reach the desired status.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param arn: document classifier arn.
+    :param succeeded_status: list of status that indicate the waiter should stop
+        as succeeded.
+    :param failed_status: list of status that indicate the waiter should stop
+        and raise exception.
+    :param delays:
+    :param timeout:
+    :param verbose:
+    """
     if failed_status is None:
         failed_status = []
     for _ in Waiter(delays=delays, timeout=timeout, verbose=verbose):
@@ -340,6 +369,16 @@ def wait_create_document_classifier_to_succeed(
     timeout: int = 3600,
     verbose: bool = True,
 ):
+    """
+    Wait for the "create document classifier" api call to reach succeeded status.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param arn: document classifier arn.
+    :param delays:
+    :param timeout:
+    :param verbose:
+    :return:
+    """
     if verbose:  # pragma: no cover
         print(
             f"{common.play_or_pause} wait for "
@@ -374,6 +413,16 @@ def wait_delete_document_classifier_to_finish(
     timeout: int = 3600,
     verbose: bool = True,
 ):
+    """
+    Wait for the "delete document classifier" api call to finish.
+
+    :param bsm: ``boto_session_manager.BotoSesManager`` object.
+    :param arn: document classifier arn.
+    :param delays:
+    :param timeout:
+    :param verbose:
+    :return:
+    """
     if verbose:  # pragma: no cover
         print(
             f"{common.play_or_pause} wait for "
