@@ -3,11 +3,11 @@
 [run]
 omit =
     aws_comprehend/_version.py
-    aws_comprehend/cli.py
-    aws_comprehend/pkg/*
+    aws_comprehend/paths.py
+    aws_comprehend/compat.py
     aws_comprehend/docs/*
     aws_comprehend/tests/*
-    aws_comprehend/handlers/*
+    aws_comprehend/vendor/*
 
 [report]
 # Regexes for lines to exclude from consideration

@@ -3,7 +3,8 @@ aws_comprehend_venv/
 aws_comprehend.egg-info/
 aws_comprehend-*/
 tmp/
-
+debug/train/
+debug/test/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
