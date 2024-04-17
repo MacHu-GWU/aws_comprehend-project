@@ -52,6 +52,8 @@ Welcome to ``aws_comprehend`` Documentation
 ==============================================================================
 ``aws_comprehend`` improves the vanilla Amazon Comprehend boto3 API.
 
+See `Usage Example <./debug/debug.py>`_.
+
 
 .. _install:
 
