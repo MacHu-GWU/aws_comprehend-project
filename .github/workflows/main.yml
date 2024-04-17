@@ -4,10 +4,10 @@
 name: CI
 
 on:
-#  push: # any push event to master will trigger this
-#    branches: ["main"]
-#  pull_request: # any pull request to master will trigger this
-#    branches: ["main"]
+  push: # any push event to master will trigger this
+    branches: ["main"]
+  pull_request: # any pull request to master will trigger this
+    branches: ["main"]
   workflow_dispatch: # allows you to manually trigger run
 
 jobs:
@@ -18,8 +18,8 @@ jobs:
       USING_COVERAGE: "3.7,3.8,3.9,3.10,3.11"
     strategy:
       matrix:
-#        os: ["ubuntu-latest", "windows-latest"]
-        os: ["ubuntu-latest", ] # for debug only
+        os: ["ubuntu-latest", "windows-latest"]
+#        os: ["ubuntu-latest", ] # for debug only
 #        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         python-version: ["3.7", ] # for debug only
         exclude:
@@ -56,6 +56,6 @@ jobs:
       # create an CODECOV_TOKEN env var in GitHub actions secret
       - name: "Upload coverage to Codecov"
         if: "contains(env.USING_COVERAGE, matrix.python-version)"
-        uses: "codecov/codecov-action@v3" # https://github.com/marketplace/actions/codecov-action
+        uses: "codecov/codecov-action@v3" # https://github.com/marketplace/actions/codecov
         with:
           fail_ci_if_error: true
