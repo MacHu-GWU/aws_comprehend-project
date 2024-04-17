@@ -23,7 +23,6 @@
 
 ------
 
-
 .. .. image:: https://img.shields.io/badge/Link-Document-blue.svg
     :target: https://aws_comprehend.readthedocs.io/index.html
 
