@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
+Debug aws_comprehend. You can also learn how to use aws_comprehend by reading this file.
+
 Requirements:
 
     pip install "pathlib_mate>=1.3.2,<2.0.0"
@@ -20,10 +22,11 @@ import aws_comprehend.api as comp
 
 
 # ------------------------------------------------------------------------------
-#
+# Change the following variables to your own settings
 # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 aws_profile = "bmt_app_dev_us_east_1"
 # ------------------------------------------------------------------------------
+
 fake = Faker()
 dir_here = Path.dir_here(__file__)
 dir_f1040 = dir_here / "f1040"
@@ -153,7 +156,52 @@ def s3_wait_create_custom_model_to_succeed(version_name: str):
     )
 
 
+def s4_deploy_endpoint(version_name: str):
+    endpoint_name = f"{model_name}-{version_name}"
+    model_arn = comp.better_boto.DocumentClassifierVersion.build_arn(
+        aws_account_id=bsm.aws_account_id,
+        aws_region=bsm.aws_region,
+        classifier_name=model_name,
+        version_name=version_name,
+    )
+    response = bsm.comprehend_client.create_endpoint(
+        EndpointName=endpoint_name,
+        ModelArn=model_arn,
+        DesiredInferenceUnits=1,
+        DataAccessRoleArn=data_access_role,
+    )
+    rprint(response)
+
+
+def s5_wait_create_endpoint_to_succeed(version_name: str):
+    endpoint_name = f"{model_name}-{version_name}"
+    comp.better_boto.wait_create_or_update_endpoint_to_succeed(
+        bsm=bsm,
+        name_or_arn=endpoint_name,
+        verbose=True,
+    )
+
+
+def s6_test_endpoint(version_name: str):
+    endpoint_name = f"{model_name}-{version_name}"
+    endpoint_arn = comp.better_boto.Endpoint.build_arn(
+        aws_account_id=bsm.aws_account_id,
+        aws_region=bsm.aws_region,
+        name=endpoint_name,
+    )
+    response = bsm.comprehend_client.classify_document(
+        Text=dir_f1040.joinpath("f1040-page1.txt").read_text(),
+        # Text=dir_fw2.joinpath("fw2-page1.txt").read_text(),
+        EndpointArn=endpoint_arn,
+    )
+    rprint(response)
+
+
 if __name__ == "__main__":
-    # s1_generate_train_test()
+    s1_generate_train_test()
     # s2_create_custom_model()
-    s3_wait_create_custom_model_to_succeed("v000001")
+    # version_name = "v000001"
+    # s3_wait_create_custom_model_to_succeed(version_name)
+    # s4_deploy_endpoint(version_name)
+    # s5_wait_create_endpoint_to_succeed(version_name)
+    # s6_test_endpoint(version_name)

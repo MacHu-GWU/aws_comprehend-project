@@ -358,7 +358,7 @@ def wait_create_or_update_endpoint_to_succeed(
     if flag is False:
         raise WaiterError(f"{arn} not found!")
     if verbose:  # pragma: no cover
-        print(f"{common.succeeded} Comprehend endpoint is in service.")
+        print(f"\n{common.succeeded} Comprehend endpoint is in service.")
 
 
 def wait_delete_endpoint_to_finish(
@@ -401,4 +401,4 @@ def wait_delete_endpoint_to_finish(
     if flag is not False:
         raise WaiterError("Deletion failed!")
     if verbose:  # pragma: no cover
-        print(f"{common.succeeded} Comprehend endpoint is deleted.")
+        print(f"\n{common.succeeded} Comprehend endpoint is deleted.")

@@ -8,6 +8,8 @@ Backlog (TODO)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 **Features and Improvements**
 
+- Add support to entity recognizer.
+
 **Minor Improvements**
 
 **Bugfixes**

@@ -403,7 +403,7 @@ def wait_create_document_classifier_to_succeed(
     if flag is False:
         raise WaiterError(f"{arn} not found!")
     if verbose:  # pragma: no cover
-        print(f"{common.succeeded} document classifier is trained.")
+        print(f"\n{common.succeeded} document classifier is trained.")
 
 
 def wait_delete_document_classifier_to_finish(
@@ -444,4 +444,4 @@ def wait_delete_document_classifier_to_finish(
     if flag is not False:
         raise WaiterError("Deletion failed!")
     if verbose:  # pragma: no cover
-        print(f"{common.succeeded} document classifier is deleted.")
+        print(f"\n{common.succeeded} document classifier is deleted.")
